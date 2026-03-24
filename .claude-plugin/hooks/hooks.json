@@ -1,0 +1,29 @@
+{
+  "description": "Gemini Bridge lifecycle hooks — manages persistent Gemini session",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/sessionstart.mjs",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/stop.mjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

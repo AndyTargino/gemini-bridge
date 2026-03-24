@@ -1,0 +1,31 @@
+{
+  "name": "gemini-bridge",
+  "owner": {
+    "name": "AndyTargino",
+    "email": "andy@targino.dev"
+  },
+  "metadata": {
+    "description": "Gemini CLI integration plugin for Claude Code — multi-model collaboration and token optimization",
+    "version": "1.0.0",
+    "homepage": "https://github.com/AndyTargino/gemini-bridge"
+  },
+  "plugins": [
+    {
+      "name": "gemini-bridge",
+      "source": "./",
+      "description": "Delegate analysis, planning, reviews, tests and code generation to Gemini CLI from within Claude Code",
+      "version": "1.0.0",
+      "author": {
+        "name": "AndyTargino"
+      },
+      "category": "development",
+      "keywords": [
+        "gemini",
+        "multi-model",
+        "token-saving",
+        "code-review",
+        "planning"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "gemini-bridge",
+  "version": "1.0.0",
+  "description": "Bridge between Claude Code and Google Gemini CLI — delegate heavy tasks to Gemini to save Claude tokens",
+  "author": {
+    "name": "AndyTargino",
+    "url": "https://github.com/AndyTargino"
+  },
+  "homepage": "https://github.com/AndyTargino/gemini-bridge#readme",
+  "repository": "https://github.com/AndyTargino/gemini-bridge",
+  "license": "MIT",
+  "keywords": [
+    "gemini",
+    "google",
+    "multi-model",
+    "bridge",
+    "token-saving",
+    "delegation",
+    "subagent"
+  ],
+  "skills": "./skills/"
+}

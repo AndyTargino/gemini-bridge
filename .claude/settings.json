@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gemini:*)",
+      "Bash(bash ~/.claude/gemini-bridge.sh:*)",
+      "Bash(bash ~/.claude/gemini-session.sh:*)",
+      "Bash(cat > /tmp/gemini_prompt.txt:*)"
+    ]
+  }
+}

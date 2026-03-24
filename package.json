@@ -1,0 +1,22 @@
+{
+  "name": "gemini-bridge",
+  "version": "1.0.0",
+  "description": "Claude Code plugin — Bridge to Google Gemini CLI for multi-model collaboration and token optimization",
+  "type": "module",
+  "author": "AndyTargino",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AndyTargino/gemini-bridge"
+  },
+  "keywords": [
+    "claude-code",
+    "gemini",
+    "plugin",
+    "multi-model",
+    "token-saving"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
