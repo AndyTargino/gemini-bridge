@@ -6,6 +6,11 @@
 #
 # Usage: bash ~/.claude/gemini-bridge.sh "your prompt here"
 # Usage: bash ~/.claude/gemini-bridge.sh --file /path/to/prompt.txt
+# Usage: bash ~/.claude/gemini-bridge.sh --yolo "prompt here"
+#
+# Config: ~/.claude/gemini-bridge.conf (optional)
+#   GEMINI_YOLO=true|false   — run gemini with --yolo (auto-approve all actions)
+#   GEMINI_MODEL=model-name  — override gemini model
 # =============================================================================
 
 set -uo pipefail
@@ -16,8 +21,18 @@ MAX_RETRIES=2
 RETRY_DELAY=3
 LOG_DIR="$HOME/.claude/gemini-logs"
 SESSION_SCRIPT="$HOME/.claude/gemini-session.sh"
+CONFIG_FILE="$HOME/.claude/gemini-bridge.conf"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="$LOG_DIR/$TIMESTAMP.log"
+
+# Defaults
+GEMINI_YOLO="${GEMINI_YOLO:-false}"
+GEMINI_MODEL="${GEMINI_MODEL:-}"
+
+# Load config file if exists
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+fi
 
 # --- Setup ---
 mkdir -p "$LOG_DIR"
@@ -45,6 +60,26 @@ check_gemini() {
     return 0
 }
 
+# Build gemini command args based on config
+build_gemini_args() {
+    local prompt="$1"
+    local args=()
+
+    args+=("-p" "$prompt")
+
+    if [ "$GEMINI_YOLO" = "true" ]; then
+        args+=("--yolo")
+        log "YOLO mode enabled"
+    fi
+
+    if [ -n "$GEMINI_MODEL" ]; then
+        args+=("-m" "$GEMINI_MODEL")
+        log "Using model: $GEMINI_MODEL"
+    fi
+
+    echo "${args[@]}"
+}
+
 # Try sending via persistent session (fast path)
 try_session() {
     local prompt="$1"
@@ -54,7 +89,6 @@ try_session() {
         return 1
     fi
 
-    # Check if session is running
     local status
     status=$(bash "$SESSION_SCRIPT" status 2>/dev/null) || return 1
 
@@ -83,14 +117,19 @@ call_gemini_direct() {
     local output=""
     local exit_code=0
 
+    # Build args array
+    local -a cmd_args=("-p" "$prompt")
+    [ "$GEMINI_YOLO" = "true" ] && cmd_args+=("--yolo")
+    [ -n "$GEMINI_MODEL" ] && cmd_args+=("-m" "$GEMINI_MODEL")
+
     while [ $attempt -le $MAX_RETRIES ]; do
-        log "Direct call attempt $attempt/$MAX_RETRIES"
+        log "Direct call attempt $attempt/$MAX_RETRIES (yolo=$GEMINI_YOLO, model=${GEMINI_MODEL:-default})"
 
         local output_file
         output_file=$(mktemp)
 
         exit_code=0
-        $GEMINI_CMD -p "$prompt" 2>>"$LOG_FILE" > "$output_file" || exit_code=$?
+        $GEMINI_CMD "${cmd_args[@]}" 2>>"$LOG_FILE" > "$output_file" || exit_code=$?
 
         output=$(cat "$output_file")
         rm -f "$output_file"
@@ -139,31 +178,50 @@ cleanup_old_logs
 
 # Parse arguments
 PROMPT=""
-if [ "${1:-}" = "--file" ] && [ -n "${2:-}" ]; then
-    if [ -f "$2" ]; then
-        PROMPT=$(cat "$2")
-        log "Loaded prompt from file: $2 (${#PROMPT} chars)"
-    else
-        echo "ERROR: Prompt file not found: $2"
-        exit 1
-    fi
-elif [ -n "${1:-}" ]; then
-    PROMPT="$1"
-    log "Received inline prompt (${#PROMPT} chars)"
-else
-    if [ ! -t 0 ]; then
-        PROMPT=$(cat)
-        log "Received prompt from stdin (${#PROMPT} chars)"
-    else
-        echo "ERROR: No prompt provided"
-        echo "Usage: gemini-bridge.sh \"prompt\" | --file path | stdin"
-        exit 1
-    fi
+YOLO_FLAG=false
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --yolo)
+            GEMINI_YOLO="true"
+            shift
+            ;;
+        --no-yolo)
+            GEMINI_YOLO="false"
+            shift
+            ;;
+        --model)
+            GEMINI_MODEL="$2"
+            shift 2
+            ;;
+        --file)
+            if [ -n "${2:-}" ] && [ -f "$2" ]; then
+                PROMPT=$(cat "$2")
+                log "Loaded prompt from file: $2 (${#PROMPT} chars)"
+            else
+                echo "ERROR: Prompt file not found: ${2:-}"
+                exit 1
+            fi
+            shift 2
+            ;;
+        *)
+            PROMPT="$1"
+            log "Received inline prompt (${#PROMPT} chars)"
+            shift
+            ;;
+    esac
+done
+
+# Read from stdin if no prompt yet
+if [ -z "$PROMPT" ] && [ ! -t 0 ]; then
+    PROMPT=$(cat)
+    log "Received prompt from stdin (${#PROMPT} chars)"
 fi
 
 # Validate
 if [ -z "$PROMPT" ]; then
-    echo "ERROR: Empty prompt"
+    echo "ERROR: No prompt provided"
+    echo "Usage: gemini-bridge.sh [--yolo] [--no-yolo] [--model MODEL] [--file PATH] \"prompt\""
     exit 1
 fi
 
@@ -172,6 +230,8 @@ check_gemini || exit 1
 
 # Remove control chars (keep newlines)
 PROMPT=$(echo "$PROMPT" | tr -d '\000-\010\013\014\016-\037')
+
+log "Config: yolo=$GEMINI_YOLO model=${GEMINI_MODEL:-default}"
 
 # Strategy: try persistent session first (fast), then direct call (reliable)
 log "Attempting persistent session..."

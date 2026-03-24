@@ -1,0 +1,26 @@
+# =============================================================================
+# GEMINI BRIDGE CONFIGURATION
+# =============================================================================
+# Copy this file to: ~/.claude/gemini-bridge.conf
+# All settings are optional — defaults are shown below.
+# =============================================================================
+
+# YOLO MODE — Auto-approve all Gemini tool actions (no confirmation prompts)
+# Set to "true" to let Gemini execute freely without asking permission.
+# WARNING: In yolo mode, Gemini can read/write files, run commands, etc.
+# Default: false
+GEMINI_YOLO=false
+
+# MODEL — Override the default Gemini model
+# Examples: gemini-2.5-pro, gemini-2.0-flash, gemini-2.5-flash
+# Leave empty to use Gemini CLI's default model.
+# Default: (empty = CLI default)
+GEMINI_MODEL=
+
+# MAX RETRIES — How many times to retry on transient failures
+# Default: 2
+# MAX_RETRIES=2
+
+# RETRY DELAY — Seconds to wait between retries (doubles on rate limits)
+# Default: 3
+# RETRY_DELAY=3
