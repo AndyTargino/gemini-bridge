@@ -29,7 +29,7 @@ Claude Code tokens are expensive. Gemini CLI is free (with Google account) and h
 1. **Claude Code CLI** installed and authenticated
 2. **Gemini CLI** installed and authenticated:
    ```bash
-   npm install -g @anthropic-ai/gemini-cli
+   npm install -g @google/gemini-cli
    gemini  # Run once to authenticate
    ```
 
@@ -286,7 +286,7 @@ The bridge script automatically tries the persistent session first, then falls b
 
 **Requirements:**
 - Node.js >= 18
-- Gemini CLI (npm install -g @anthropic-ai/gemini-cli)
+- Gemini CLI (npm install -g @google/gemini-cli)
 - Claude Code CLI
 
 ---
